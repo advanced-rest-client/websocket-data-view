@@ -1,0 +1,151 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+    <script src="data-generator.js"></script>
+    <script src="../../chance/dist/chance.min.js"></script>
+    <link rel="import" href="../websocket-data-view.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <websocket-data-view></websocket-data-view>
+      </template>
+    </test-fixture>
+
+    <script>
+    function getActionItem(item, element) {
+      return Polymer.dom(element.root).querySelector('[data-action="' + item + '"]');
+    }
+    /* global fixture, assert, DataGenerator, TestHelpers, MockInteractions, sinon */
+    suite('basic - no data', function() {
+
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('hasMessages is not initially computed', function() {
+        assert.isUndefined(element.hasMessages);
+      });
+
+      test('isSafari is computed', function() {
+        assert.typeOf(element.isSafari, 'boolean');
+      });
+
+      test('Export button is not in the DOM', function() {
+        var node = getActionItem('export-all', element);
+        assert.notOk(node);
+      });
+
+      test('Clear button is not in the DOM', function() {
+        var node = getActionItem('clear-all', element);
+        assert.notOk(node);
+      });
+    });
+
+    suite('basic - with data', function() {
+
+      var element;
+      setup(function() {
+        element = fixture('basic');
+        element.messages = DataGenerator.generateData(25);
+        TestHelpers.forceXIfStamp(element);
+      });
+
+      test('hasMessages is computed', function() {
+        assert.isTrue(element.hasMessages);
+      });
+
+      test('Export button is in the DOM', function() {
+        var node = getActionItem('export-all', element);
+        assert.ok(node);
+      });
+
+      test('Clear button is in the DOM', function() {
+        var node = getActionItem('clear-all', element);
+        assert.ok(node);
+      });
+
+      test('Messages are rendered', function() {
+        var nodes = Polymer.dom(element.root).querySelectorAll('.table-values');
+        assert.lengthOf(nodes, 25);
+      });
+
+      test('Clear button clears the messages', function() {
+        var node = getActionItem('clear-all', element);
+        MockInteractions.tap(node);
+        TestHelpers.forceXIfStamp(element);
+        assert.isUndefined(element.messages, 'Messages are cleared');
+        assert.isFalse(element.hasMessages, 'hasMessages is false');
+        var nodes = Polymer.dom(element.root).querySelectorAll('.table-values');
+        assert.lengthOf(nodes, 0, 'No messages are rendered');
+      });
+
+      test('Clear button fires message-cleared event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('message-cleared', spy);
+        var node = getActionItem('clear-all', element);
+        MockInteractions.tap(node);
+        assert.isTrue(spy.calledOnce);
+      });
+
+      test('Export button fires export-data event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('export-data', spy);
+        var node = getActionItem('export-all', element);
+        MockInteractions.tap(node);
+        assert.isTrue(spy.calledOnce);
+      });
+
+      test('Not handled export-data event generates web file download', function() {
+        if (element.isSafari) {
+          return;
+        }
+        var node = getActionItem('export-all', element);
+        MockInteractions.tap(node);
+        assert.typeOf(element.downloadFileUrl, 'string', 'downloadFileUrl is set');
+        assert.typeOf(element.downloadFileName, 'string', 'downloadFileName is set');
+        var dialog = element.$$('paper-dialog');
+        assert.isTrue(dialog.opened, 'Save dialog is opened');
+      });
+
+      test('Closing save dialog clears the download data', function(done) {
+        if (element.isSafari) {
+          done();
+          return;
+        }
+        var node = getActionItem('export-all', element);
+        MockInteractions.tap(node);
+        setTimeout(function() {
+          var node = element.$$('#saveDialog paper-button[dialog-dismiss]');
+          MockInteractions.tap(node);
+          setTimeout(function() {
+            assert.isUndefined(element.downloadFileUrl, 'downloadFileUrl is cleared');
+            assert.isUndefined(element.downloadFileName, 'downloadFileName is cleared');
+            done();
+          }, 300);
+        }, 300);
+      });
+    });
+    </script>
+
+  </body>
+</html>
