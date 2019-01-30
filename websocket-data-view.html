@@ -130,7 +130,7 @@ the License.
             </template>
             <template is="dom-if" if="[[item.isBinary]]">
               <span class="message">[Binary data]</span>
-              <paper-icon-button data-action="export-binary" icon="arc:file-download" on-click="_downloadBinnary" title="Download binnary data"></paper-icon-button>
+              <paper-icon-button data-action="export-binary" icon="arc:file-download" on-click="_downloadBinary" title="Download binary data"></paper-icon-button>
             </template>
           </div>
         </div>
@@ -178,7 +178,9 @@ the License.
    * @demo demo/index.html
    */
   class WebsocketDataView extends Polymer.Element {
-    static get is() { return 'websocket-data-view'; }
+    static get is() {
+      return 'websocket-data-view';
+    }
     static get properties() {
       return {
         // List of communication messages with the socket
@@ -219,6 +221,10 @@ the License.
     }
     /**
      * Sorts messages in a log so the newest messages are always on top.
+     *
+     * @param {Object} a
+     * @param {Object} b
+     * @return {Number}
      */
     _sortMessages(a, b) {
       if (a.time > b.time) {
@@ -252,9 +258,11 @@ the License.
     /**
      * Handler for the "download binary data" button click.
      * Exports the binary data.
+     *
+     * @param {ClickEvent} e
      */
-    _downloadBinnary(e) {
-      const item = this.$.logList.modelForElement(e.target).get('item');
+    _downloadBinary(e) {
+      const item = e.model.get('item');
       const data = item.message;
       this._exportData(data, data.type || 'application/octet-stream');
     }
@@ -269,8 +277,8 @@ the License.
         composed: true,
         cancelable: true,
         detail: {
-          data: data,
-          type: type,
+          data,
+          type,
           destination: 'file'
         }
       });
@@ -287,6 +295,9 @@ the License.
     /**
      * Creates a file object form messages objects and opens the dialog
      * with the link to the file.
+     *
+     * @param {String|Blob} data
+     * @param {String} type Content mime type
      */
     _saveToFile(data, type) {
       let ext = '';
