@@ -1,24 +1,12 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
     <script src="../../iron-test-helpers/mock-interactions.js"></script>
-
-    <script src="data-generator.js"></script>
+    <script src="../demo/data-generator.js"></script>
     <script src="../../chance/dist/chance.min.js"></script>
     <link rel="import" href="../websocket-data-view.html">
   </head>
@@ -32,14 +20,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
     function getActionItem(item, element) {
-      return Polymer.dom(element.root).querySelector('[data-action="' + item + '"]');
+      return element.shadowRoot.querySelector('[data-action="' + item + '"]');
     }
-    /* global fixture, assert, DataGenerator, TestHelpers, MockInteractions, sinon */
+    /* global DataGenerator, MockInteractions */
     suite('basic - no data', function() {
-
-      var element;
-      setup(function() {
+      let element;
+      setup(function(done) {
         element = fixture('basic');
+        flush(() => done());
       });
 
       test('hasMessages is not initially computed', function() {
@@ -51,23 +39,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       test('Export button is not in the DOM', function() {
-        var node = getActionItem('export-all', element);
+        const node = getActionItem('export-all', element);
         assert.notOk(node);
       });
 
       test('Clear button is not in the DOM', function() {
-        var node = getActionItem('clear-all', element);
+        const node = getActionItem('clear-all', element);
         assert.notOk(node);
       });
     });
 
     suite('basic - with data', function() {
-
-      var element;
-      setup(function() {
+      let element;
+      setup(function(done) {
         element = fixture('basic');
         element.messages = DataGenerator.generateData(25);
-        TestHelpers.forceXIfStamp(element);
+        flush(() => done());
       });
 
       test('hasMessages is computed', function() {
@@ -75,42 +62,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       test('Export button is in the DOM', function() {
-        var node = getActionItem('export-all', element);
+        const node = getActionItem('export-all', element);
         assert.ok(node);
       });
 
       test('Clear button is in the DOM', function() {
-        var node = getActionItem('clear-all', element);
+        const node = getActionItem('clear-all', element);
         assert.ok(node);
       });
 
       test('Messages are rendered', function() {
-        var nodes = Polymer.dom(element.root).querySelectorAll('.table-values');
+        const nodes = element.shadowRoot.querySelectorAll('.table-values');
         assert.lengthOf(nodes, 25);
       });
 
-      test('Clear button clears the messages', function() {
-        var node = getActionItem('clear-all', element);
+      test('Clear button clears the messages', function(done) {
+        const node = getActionItem('clear-all', element);
         MockInteractions.tap(node);
-        TestHelpers.forceXIfStamp(element);
-        assert.isUndefined(element.messages, 'Messages are cleared');
-        assert.isFalse(element.hasMessages, 'hasMessages is false');
-        var nodes = Polymer.dom(element.root).querySelectorAll('.table-values');
-        assert.lengthOf(nodes, 0, 'No messages are rendered');
+        flush(() => {
+          assert.isUndefined(element.messages, 'Messages are cleared');
+          assert.isFalse(element.hasMessages, 'hasMessages is false');
+          const nodes = element.shadowRoot.querySelectorAll('.table-values');
+          assert.lengthOf(nodes, 0, 'No messages are rendered');
+          done();
+        });
       });
 
       test('Clear button fires message-cleared event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('message-cleared', spy);
-        var node = getActionItem('clear-all', element);
+        const node = getActionItem('clear-all', element);
         MockInteractions.tap(node);
         assert.isTrue(spy.calledOnce);
       });
 
       test('Export button fires export-data event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('export-data', spy);
-        var node = getActionItem('export-all', element);
+        const node = getActionItem('export-all', element);
         MockInteractions.tap(node);
         assert.isTrue(spy.calledOnce);
       });
@@ -119,11 +108,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (element.isSafari) {
           return;
         }
-        var node = getActionItem('export-all', element);
+        const node = getActionItem('export-all', element);
         MockInteractions.tap(node);
         assert.typeOf(element.downloadFileUrl, 'string', 'downloadFileUrl is set');
         assert.typeOf(element.downloadFileName, 'string', 'downloadFileName is set');
-        var dialog = element.$$('paper-dialog');
+        const dialog = element.shadowRoot.querySelector('paper-dialog');
         assert.isTrue(dialog.opened, 'Save dialog is opened');
       });
 
@@ -132,10 +121,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           done();
           return;
         }
-        var node = getActionItem('export-all', element);
+        const node = getActionItem('export-all', element);
         MockInteractions.tap(node);
         setTimeout(function() {
-          var node = element.$$('#saveDialog paper-button[dialog-dismiss]');
+          const node = element.shadowRoot.querySelector('#saveDialog paper-button[dialog-dismiss]');
           MockInteractions.tap(node);
           setTimeout(function() {
             assert.isUndefined(element.downloadFileUrl, 'downloadFileUrl is cleared');
@@ -143,6 +132,183 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             done();
           }, 300);
         }, 300);
+      });
+    });
+
+    suite('_sortMessages()', function() {
+      let element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Returns -1 when a.time is > b.time', () => {
+        const result = element._sortMessages({time: 1}, {time: 0});
+        assert.equal(result, -1);
+      });
+
+      test('Returns 1 when a.time is < b.time', () => {
+        const result = element._sortMessages({time: 0}, {time: 1});
+        assert.equal(result, 1);
+      });
+
+      test('Returns 0 otherwise', () => {
+        const result = element._sortMessages({time: 1}, {time: 1});
+        assert.equal(result, 0);
+      });
+    });
+
+    suite('_getExportData()', function() {
+      let element;
+      setup(function() {
+        element = fixture('basic');
+        element.messages = DataGenerator.generateData(25);
+        element.messages[0].isBinary = true;
+      });
+
+      test('Returns an array', () => {
+        const result = element._getExportData();
+        assert.typeOf(result, 'array');
+      });
+
+      test('Returns undefined when no data', () => {
+        element.messages = undefined;
+        const result = element._getExportData();
+        assert.isUndefined(result);
+      });
+
+      test('Filters out binary messages', () => {
+        const msg = element.messages[0].message;
+        const result = element._getExportData();
+        assert.notEqual(result.length, 25);
+        assert.notEqual(result[0].message, msg);
+      });
+    });
+
+    suite('_exportMessages()', function() {
+      let element;
+      setup(function(done) {
+        element = fixture('basic');
+        element.messages = DataGenerator.generateData(25);
+        element.messages[0].isBinary = true;
+        flush(() => done());
+      });
+
+      function exportHandler(e) {
+        e.preventDefault();
+      }
+
+      suiteSetup(() => {
+        window.addEventListener('export-data', exportHandler);
+      });
+
+      suiteTeardown(() => {
+        window.removeEventListener('export-data', exportHandler);
+      });
+
+      test('Calls _exportMessages()', () => {
+        const spy = sinon.spy(element, '_exportMessages');
+        element._exportMessages();
+        assert.isTrue(spy.called);
+      });
+
+      test('Calls _exportData() with arguments', () => {
+        const spy = sinon.spy(element, '_exportData');
+        element._exportMessages();
+        assert.isTrue(spy.called);
+        assert.typeOf(spy.args[0][0], 'array');
+        assert.equal(spy.args[0][1], 'application/json');
+      });
+
+      test('Opens no data toast', () => {
+        element.messages = undefined;
+        element._exportMessages();
+        assert.isTrue(element.$.noMessages.opened);
+      });
+    });
+
+    suite('_downloadBinary()', () => {
+      let element;
+      setup(function(done) {
+        element = fixture('basic');
+        element.messages = DataGenerator.generateData(25);
+        flush(() => done());
+      });
+
+      test('Calls _exportData() with arguments', () => {
+        const spy = sinon.spy(element, '_exportData');
+        const node = element.shadowRoot.querySelector('[data-action="export-binary"]');
+        MockInteractions.tap(node);
+        assert.isTrue(spy.called);
+        assert.typeOf(spy.args[0][0], 'blob');
+        assert.equal(spy.args[0][1], 'text/plain');
+      });
+
+      test('Sets default mime type', (done) => {
+        element.messages.forEach((item, index) => {
+          element.set('messages.' + index + '.isBinary', false);
+        });
+        element.set('messages.0.isBinary', true);
+        element.set('messages.0.message', new Blob(['test']));
+        flush(() => {
+          const spy = sinon.spy(element, '_exportData');
+          const node = element.shadowRoot.querySelector('[data-action="export-binary"]');
+          MockInteractions.tap(node);
+          assert.isTrue(spy.called);
+          assert.typeOf(spy.args[0][0], 'blob');
+          assert.equal(spy.args[0][1], 'application/octet-stream');
+          done();
+        });
+      });
+    });
+
+    suite('_saveToFile()', () => {
+      let element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Sets objecturl from a blob', () => {
+        const data = new Blob(['test']);
+        const mime = 'text/plain';
+        element._saveToFile(data, mime);
+        assert.typeOf(element.downloadFileUrl, 'string');
+      });
+
+      test('Sets file name from blob', () => {
+        const data = new Blob(['test']);
+        const mime = 'text/plain';
+        element._saveToFile(data, mime);
+        assert.typeOf(element.downloadFileName, 'string');
+      });
+
+      test('Sets .json extension for JSON mime', () => {
+        const data = new Blob(['test']);
+        const mime = 'application/json';
+        element._saveToFile(data, mime);
+        assert.notEqual(element.downloadFileName.indexOf('.json'), -1);
+      });
+
+      test('Sets .txt extension for plain text mime', () => {
+        const data = new Blob(['test']);
+        const mime = 'text/plain';
+        element._saveToFile(data, mime);
+        assert.notEqual(element.downloadFileName.indexOf('.txt'), -1);
+      });
+    });
+
+    suite('_downloadIconTap()', () => {
+      let element;
+      setup(function() {
+        element = fixture('basic');
+        element.$.saveDialog.opened = true;
+      });
+
+      test('Closes the dialog', (done) => {
+        element._downloadIconTap();
+        setTimeout(() => {
+          assert.isFalse(element.$.saveDialog.opened);
+          done();
+        }, 250);
       });
     });
     </script>
