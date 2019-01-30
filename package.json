@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "description": "A web socket communication log viewer for web socket request panel",
   "devDependencies": {
-    "@polymer/gen-typescript-declarations": "^1.5.1"
+    "@polymer/gen-typescript-declarations": "^1.6.1"
   },
   "private": false,
   "main": "websocket-data-view.html",
