@@ -4141,7 +4141,7 @@
       },
       "privacy": "public",
       "superclass": "Polymer.Element",
-      "name": "UiElements.WebsocketDataView",
+      "name": "ApiElements.WebsocketDataView",
       "attributes": [
         {
           "name": "messages",

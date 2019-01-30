@@ -23,7 +23,7 @@
 /// <reference path="../paper-dialog/paper-dialog.d.ts" />
 /// <reference path="../paper-button/paper-button.d.ts" />
 
-declare namespace UiElements {
+declare namespace ApiElements {
 
   /**
    * A web socket communication log viewer for web socket request panel
@@ -128,5 +128,5 @@ declare namespace UiElements {
 }
 
 interface HTMLElementTagNameMap {
-  "websocket-data-view": UiElements.WebsocketDataView;
+  "websocket-data-view": ApiElements.WebsocketDataView;
 }
