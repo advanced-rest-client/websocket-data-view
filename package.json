@@ -1,6 +1,6 @@
 {
-  "name": "websocket-data-view",
-  "version": "2.0.0-preview",
+  "name": "@api-components/websocket-data-view",
+  "version": "2.0.0",
   "license": "Apache-2.0",
   "description": "A web socket communication log viewer for web socket request panel",
   "devDependencies": {

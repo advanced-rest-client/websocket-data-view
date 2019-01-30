@@ -1,7 +1,7 @@
 {
   "name": "websocket-data-view",
   "description": "A web socket communication log viewer for web socket request panel",
-  "version": "2.0.0-preview",
+  "version": "2.0.0",
   "license": "Apache-2.0",
   "authors": [
     "Pawel Psztyc",
