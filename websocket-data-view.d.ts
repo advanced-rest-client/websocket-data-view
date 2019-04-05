@@ -5,23 +5,12 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   websocket-data-view.html
+ *   websocket-data-view.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
-
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../polymer/types/lib/elements/dom-repeat.d.ts" />
-/// <reference path="../polymer/types/lib/elements/dom-if.d.ts" />
-/// <reference path="../paper-icon-button/paper-icon-button.d.ts" />
-/// <reference path="../iron-flex-layout/iron-flex-layout.d.ts" />
-/// <reference path="../arc-icons/arc-icons.d.ts" />
-/// <reference path="../date-time/date-time.d.ts" />
-/// <reference path="../paper-toast/paper-toast.d.ts" />
-/// <reference path="../paper-dialog/paper-dialog.d.ts" />
-/// <reference path="../paper-button/paper-button.d.ts" />
 
 declare namespace ApiElements {
 
@@ -43,7 +32,7 @@ declare namespace ApiElements {
    * ----------------|-------------|----------
    * `--websocket-data-view` | Mixin applied to the element | `{}`
    */
-  class WebsocketDataView extends Polymer.Element {
+  class WebsocketDataView extends PolymerElement {
 
     /**
      * List of communication messages with the socket
@@ -127,6 +116,11 @@ declare namespace ApiElements {
   }
 }
 
-interface HTMLElementTagNameMap {
-  "websocket-data-view": ApiElements.WebsocketDataView;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "websocket-data-view": ApiElements.WebsocketDataView;
+  }
 }
+
+export {};

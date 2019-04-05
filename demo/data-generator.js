@@ -1,5 +1,6 @@
+import '../../../chance/dist/chance.min.js';
 /* global chance */
-const DataGenerator = {};
+export const DataGenerator = {};
 let LAST_TIME = Date.now();
 
 DataGenerator.genMessageObject = function() {
