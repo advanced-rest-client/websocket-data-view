@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/advanced-rest-client/websocket-data-view.svg?branch=stage)](https://travis-ci.org/advanced-rest-client/websocket-data-view)
 
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/advanced-rest-client/websocket-data-view)
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/@advanced-rest-client/websocket-data-view)
 
 
 # websocket-data-view
@@ -12,7 +12,7 @@ A web socket communication log viewer for web socket request panel
 ## Example:
 
 ```html
-<websocket-data-view></websocket-data-view>
+<websocket-data-view messages="..."></websocket-data-view>
 ```
 
 ## API components
@@ -32,7 +32,7 @@ npm install --save @advanced-rest-client/websocket-data-view
 <html>
   <head>
     <script type="module">
-      import './node_modules/@advanced-rest-client/websocket-data-view/websocket-data-view.js';
+      import '@advanced-rest-client/websocket-data-view/websocket-data-view.js';
     </script>
   </head>
   <body>
@@ -44,8 +44,8 @@ npm install --save @advanced-rest-client/websocket-data-view
 ### In a Polymer 3 element
 
 ```js
-import {PolymerElement, html} from './node_modules/@polymer/polymer/polymer-element.js';
-import './node_modules/@advanced-rest-client/websocket-data-view/websocket-data-view.js';
+import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
+import '@advanced-rest-client/websocket-data-view/websocket-data-view.js';
 
 class SampleElement extends PolymerElement {
   static get template() {
@@ -57,23 +57,21 @@ class SampleElement extends PolymerElement {
 customElements.define('sample-element', SampleElement);
 ```
 
-### Installation
+### Development
 
 ```sh
 git clone https://github.com/advanced-rest-client/websocket-data-view
-cd api-url-editor
+cd websocket-data-view
 npm install
-npm install -g polymer-cli
 ```
 
 ### Running the demo locally
 
 ```sh
-polymer serve --npm
-open http://127.0.0.1:<port>/demo/
+npm start
 ```
 
 ### Running the tests
 ```sh
-polymer test --npm
+npm test
 ```

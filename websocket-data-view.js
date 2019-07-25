@@ -11,17 +11,14 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
-import '../../@polymer/polymer/lib/elements/dom-repeat.js';
-import '../../@polymer/polymer/lib/elements/dom-if.js';
-import '../../@polymer/paper-icon-button/paper-icon-button.js';
-import '../../@polymer/iron-flex-layout/iron-flex-layout.js';
-import '../../@advanced-rest-client/arc-icons/arc-icons.js';
-import '../../@advanced-rest-client/date-time/date-time.js';
-import '../../@polymer/paper-toast/paper-toast.js';
-import '../../@polymer/paper-dialog/paper-dialog.js';
-import '../../@polymer/paper-button/paper-button.js';
-import {html} from '../../@polymer/polymer/lib/utils/html-tag.js';
+import { LitElement, html, css } from 'lit-element';
+import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@advanced-rest-client/arc-icons/arc-icons.js';
+import '@advanced-rest-client/date-time/date-time.js';
+import '@polymer/paper-toast/paper-toast.js';
+import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-button/paper-button.js';
+export const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 /**
  * A web socket communication log viewer for web socket request panel
  *
@@ -31,44 +28,38 @@ import {html} from '../../@polymer/polymer/lib/utils/html-tag.js';
  * <websocket-data-view></websocket-data-view>
  * ```
  *
- * ### Styling
- *
- * `<websocket-data-view>` provides the following custom properties and
- * mixins for styling:
- *
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * `--websocket-data-view` | Mixin applied to the element | `{}`
- *
- * @polymer
  * @customElement
- * @memberof ApiElements
+ * @memberof UiElements
  * @demo demo/index.html
  */
-class WebsocketDataView extends PolymerElement {
-  static get template() {
-    return html`
-    <style>
-    :host {
+export class WebsocketDataView extends LitElement {
+  static get styles() {
+    return css`:host {
       display: block;
-      @apply --arc-font-body1;
-      @apply --websocket-data-view;
+      font-size: var(--arc-font-body1-font-size, inherit);
+      font-weight: var(--arc-font-body1-font-weight, inherit);
+      line-height: var(--arc-font-body1-line-height, inherit);
     }
 
     .table-values {
       color: var(--websocket-data-view-table-color, rgba(0, 0, 0, 0.87));
       font-size: var(--websocket-data-view-table-font-size, 13px);
       padding: 16px 24px !important;
-      -webkit-user-select: text;
+      user-select: text;
       cursor: text;
     }
 
     .table-values,
     .table-columns {
-      @apply --layout-horizontal;
-      @apply --layout-center;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
       border-bottom: 1px var(--websocket-data-view-divider-color, rgba(0, 0, 0, 0.12)) solid;
       padding: 0 24px;
+    }
+
+    .table-columns {
+      height: 40px;
     }
 
     .table-columns:last-child {
@@ -82,8 +73,10 @@ class WebsocketDataView extends PolymerElement {
     }
 
     .message-column {
-      @apply --layout-flex;
-      @apply --layout-horizontal;
+      flex: 1;
+      flex-basis: 0.000000001px;
+      display: flex;
+      flex-direction: row;
       padding-right: 0;
     }
 
@@ -104,17 +97,18 @@ class WebsocketDataView extends PolymerElement {
     .message-column .message {
       white-space: pre-wrap;
       word-break: normal;
-      @apply --layout-flex;
-      @apply --websocket-data-view-message;
+      flex: 1;
+      flex-basis: 0.000000001px;
     }
 
     #saveDialog {
       min-width: 320px;
     }
 
-    .donnload-section {
-      @apply --layout-vertical;
-      @apply --layout-center;
+    .donwnload-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .download-file-icon {
@@ -123,10 +117,62 @@ class WebsocketDataView extends PolymerElement {
       color: var(--websocket-data-view-download-icon, var(--accent-color));
     }
 
-    .dialog-message {
-      @apply --websocket-data-view-dialog-message;
+    :host([narrow]) .table-columns .direction-column,
+    :host([narrow]) .table-columns .time-column,
+    :host([narrow]) .table-columns .message-column  {
+      display: none;
     }
-    </style>
+
+    :host([narrow]) .table-columns .spacer {
+      flex: 1;
+    }
+
+    :host([narrow]) .table-values {
+      flex-direction: column;
+      align-items: start;
+    }
+
+    :host([narrow]) .time-column,
+    :host([narrow]) .message-column {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    :host([narrow]) .direction-column,
+    :host([narrow]) .time-column {
+      text-transform: capitalize;
+      font-weight: 500;
+    }
+
+    :host([narrow]) .message-column {
+      align-items: center;
+    }`;
+  }
+
+  _renderMessages(messages) {
+    if (!messages || !messages.length) {
+      return;
+    }
+    return messages.map((item, index) => html`<div class="table-values">
+      <div class="direction-column">${item.direction}</div>
+      <div class="time-column">
+        <date-time .date="${item.time}" hour="numeric" minute="numeric" second="numeric"></date-time>
+      </div>
+      <div class="message-column">
+      ${item.isBinary ?
+        html`[Binary data]
+        <paper-icon-button data-action="export-binary" data-index="${index}"
+          icon="arc:file-download" @click="${this._downloadBinary}" title="Download binary data"></paper-icon-button>`:
+        html`<span class="message">${item.message}</span>`
+}
+      </div>
+    </div>`);
+  }
+
+  render() {
+    const { messages, _downloadFileUrl, _downloadFileName } = this;
+    const hasMessages = !!messages && !!messages.length;
+    return html`
     <div class="table-columns">
       <div class="direction-column">
         <span title="Either 'in' for incoming or 'out' for outgoing messages">Direction</span>
@@ -137,104 +183,92 @@ class WebsocketDataView extends PolymerElement {
       <div class="message-column">
         <span title="Message sent to / received from the server">Message</span>
       </div>
-      <template is="dom-if" if="[[hasMessages]]">
-        <paper-icon-button data-action="export-all" icon="arc:file-download" on-click="_exportMessages" title="Export all messages to file"></paper-icon-button>
-        <paper-icon-button data-action="clear-all" icon="arc:clear" on-click="_clearMessages" title="Clear messages log"></paper-icon-button>
-      </template>
+      <div class="spacer"></div>
+      ${hasMessages ?
+        html`<paper-icon-button
+          data-action="export-all"
+          icon="arc:file-download"
+          @click="${this._exportMessages}" title="Export all messages to file"></paper-icon-button>
+        <paper-icon-button
+          data-action="clear-all"
+          icon="arc:clear"
+          @click="${this._clearMessages}" title="Clear messages log"></paper-icon-button>`:
+        undefined}
     </div>
-    <dom-repeat items="[[messages]]" sort="_sortMessages" id="logList">
-      <template>
-        <div class="table-values">
-          <div class="direction-column">[[item.direction]]</div>
-          <div class="time-column">
-            <date-time date="[[item.time]]" hour="numeric" minute="numeric" second="numeric"></date-time>
-          </div>
-          <div class="message-column">
-            <template is="dom-if" if="[[!item.isBinary]]">
-              <span class="message">[[item.message]]</span>
-            </template>
-            <template is="dom-if" if="[[item.isBinary]]">
-              <span class="message">[Binary data]</span>
-              <paper-icon-button data-action="export-binary" icon="arc:file-download" on-click="_downloadBinary" title="Download binary data"></paper-icon-button>
-            </template>
-          </div>
-        </div>
-      </template>
-    </dom-repeat>
-    <paper-dialog id="saveDialog" on-iron-overlay-closed="_downloadDialogClose">
+
+    ${this._renderMessages(messages)}
+
+    <paper-dialog id="saveDialog" @iron-overlay-closed="${this._downloadDialogClose}">
       <h2>Save to file</h2>
       <div>
-        <p class="dialog-message">Your file is ready to download. Click on the icon below to save it to your local drive.</p>
-        <div class="donnload-section">
-          <a href\$="[[downloadFileUrl]]" download\$="[[downloadFileName]]" on-click="_downloadIconTap" target="_blank">
-            <paper-icon-button data-action="download-file" icon="arc:file-download" class="download-file-icon" title="Download file"></paper-icon-button>
+        <p class="dialog-message">
+          Your file is ready to download. Click on the icon below to save it to your local drive.
+        </p>
+        <div class="donwnload-section">
+          <a href="${_downloadFileUrl}" download="${_downloadFileName}"
+            @click="${this._downloadIconTap}" target="_blank">
+            <paper-icon-button data-action="download-file" icon="arc:file-download"
+              class="download-file-icon" title="Download file"></paper-icon-button>
           </a>
         </div>
       </div>
       <div class="buttons">
-        <paper-button dialog-dismiss="" autofocus="">Close</paper-button>
+        <paper-button dialog-dismiss autofocus>Close</paper-button>
       </div>
     </paper-dialog>
     <paper-toast id="safariDownload"
       text="Safari doesn't support file download. Please, use other browser."></paper-toast>
-    <paper-toast id="noMessages" text="Nothing to export"></paper-toast>
-`;
+    <paper-toast id="noMessages" text="Nothing to export"></paper-toast>`;
   }
 
   static get properties() {
     return {
       // List of communication messages with the socket
       messages: Array,
-      // Computed value, true if messages are set
-      hasMessages: {
-        type: Boolean,
-        computed: '_computeHasMessages(messages)'
-      },
       /**
        * When saving a file this will be the download URL created by the
        * `URL.createObjectURL` function.
        */
-      downloadFileUrl: {
+      _downloadFileUrl: {
         type: String,
         readOnly: true
       },
       /**
        * Autogenerated file name for the download file.
        */
-      downloadFileName: {
+      _downloadFileName: {
         type: String,
-        readOnly: true
-      },
-      // Computed value. True is current browser is Safari - the new IE.
-      isSafari: {
-        type: Boolean,
-        value() {
-          return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        },
         readOnly: true
       }
     };
   }
-
-  _computeHasMessages(messages) {
-    return !!(messages && messages.length);
+  /**
+   * @return {Function} Previously registered handler for `cleared` event
+   */
+  get oncleared() {
+    return this._oncleared;
   }
   /**
-   * Sorts messages in a log so the newest messages are always on top.
-   *
-   * @param {Object} a
-   * @param {Object} b
-   * @return {Number}
+   * Registers a callback function for `cleared` event
+   * @param {Function} value A callback to register. Pass `null` or `undefined`
+   * to clear the listener.
    */
-  _sortMessages(a, b) {
-    if (a.time > b.time) {
-      return -1;
+  set oncleared(value) {
+    const old = this._oncleared;
+    if (old === value) {
+      return;
     }
-    if (a.time < b.time) {
-      return 1;
+    if (old) {
+      this.removeEventListener('cleared', old);
     }
-    return 0;
+    if (typeof value !== 'function') {
+      this._oncleared = null;
+      return;
+    }
+    this._oncleared = value;
+    this.addEventListener('cleared', value);
   }
+
   // Returns a list of messages that can be exported.
   _getExportData() {
     const data = this.messages;
@@ -250,7 +284,7 @@ class WebsocketDataView extends PolymerElement {
   _exportMessages() {
     const data = this._getExportData();
     if (!data) {
-      this.$.noMessages.opened = true;
+      this.shadowRoot.querySelector('#noMessages').opened = true;
       return;
     }
     this._exportData(data, 'application/json');
@@ -262,34 +296,40 @@ class WebsocketDataView extends PolymerElement {
    * @param {ClickEvent} e
    */
   _downloadBinary(e) {
-    const item = e.model.get('item');
+    const index = Number(e.target.dataset.index);
+    const item = this.messages[index];
+    if (!item) {
+      return;
+    }
     const data = item.message;
     this._exportData(data, data.type || 'application/octet-stream');
   }
   /**
    * Fires `export-data` event or calls `_saveToFile` if event is not handled
    * @param {Object|Blob} data The data to export.
-   * @param {String} type `data` content type
+   * @param {String} contentType `data` content type
    */
-  _exportData(data, type) {
+  _exportData(data, contentType) {
     const e = new CustomEvent('export-data', {
       bubbles: true,
       composed: true,
       cancelable: true,
       detail: {
         data,
-        type,
-        destination: 'file'
+        destination: 'file',
+        providerOptions: {
+          contentType
+        }
       }
     });
     this.dispatchEvent(e);
     if (e.defaultPrevented) {
       return;
     }
-    if (this.isSafari) {
-      this.$.safariDownload.opened = true;
+    if (isSafari) {
+      this.shadowRoot.querySelector('#safariDownload').opened = true;
     } else {
-      this._saveToFile(data, type);
+      this._saveToFile(data, contentType);
     }
   }
   /**
@@ -314,34 +354,32 @@ class WebsocketDataView extends PolymerElement {
       }
     }
     const fileName = 'socket-messages-' + new Date().toISOString() + ext;
-    this._setDownloadFileUrl(URL.createObjectURL(data));
-    this._setDownloadFileName(fileName);
-    this.$.saveDialog.opened = true;
+    this._downloadFileUrl = URL.createObjectURL(data);
+    this._downloadFileName = fileName;
+    this.shadowRoot.querySelector('#saveDialog').opened = true;
   }
   // Handler for download link click to prevent default and close the dialog.
   _downloadIconTap() {
     setTimeout(() => {
-      this.$.saveDialog.opened = false;
+      this.shadowRoot.querySelector('#saveDialog').opened = false;
     }, 250);
   }
   // Handler for file download dialog close.
   _downloadDialogClose() {
-    URL.revokeObjectURL(this.downloadFileUrl);
-    this._setDownloadFileUrl(undefined);
-    this._setDownloadFileName(undefined);
+    URL.revokeObjectURL(this._downloadFileUrl);
+    this._downloadFileUrl = undefined;
+    this._downloadFileName = undefined;
   }
   // Clears the list of the messages and sends `message-cleared` event.
   _clearMessages() {
     this.messages = undefined;
-    this.dispatchEvent(new CustomEvent('message-cleared', {
-      composed: true
-    }));
+    this.dispatchEvent(new CustomEvent('cleared'));
   }
   /**
    * Fired when the user clears the messages in the UI.
    * The event does not bubble.
    *
-   * @event message-cleared
+   * @event cleared
    */
   /**
    * Fired when data export was requested.
