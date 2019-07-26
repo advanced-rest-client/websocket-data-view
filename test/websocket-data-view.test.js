@@ -34,6 +34,7 @@ describe('<websocket-data-view>', () => {
     beforeEach(async () => {
       element = await basicFixture();
       element.messages = DataGenerator.generateData(25);
+      await nextFrame();
     });
 
     it('Export button is in the DOM', function() {
@@ -113,6 +114,7 @@ describe('<websocket-data-view>', () => {
       element = await basicFixture();
       element.messages = DataGenerator.generateData(25);
       element.messages[0].isBinary = true;
+      await nextFrame();
     });
 
     it('Returns an array', () => {
@@ -140,6 +142,7 @@ describe('<websocket-data-view>', () => {
       element = await basicFixture();
       element.messages = DataGenerator.generateData(25);
       element.messages[0].isBinary = true;
+      await nextFrame();
     });
 
     function exportHandler(e) {
@@ -180,6 +183,7 @@ describe('<websocket-data-view>', () => {
     beforeEach(async () => {
       element = await basicFixture();
       element.messages = DataGenerator.generateData(25);
+      await nextFrame();
     });
 
     it('Calls _exportData() with arguments', () => {
@@ -212,6 +216,7 @@ describe('<websocket-data-view>', () => {
     let element;
     beforeEach(async () => {
       element = await basicFixture();
+      await nextFrame();
     });
 
     it('Sets objecturl from a blob', () => {
@@ -248,6 +253,7 @@ describe('<websocket-data-view>', () => {
     beforeEach(async () => {
       element = await basicFixture();
       element.shadowRoot.querySelector('#saveDialog').opened = true;
+      await nextFrame();
     });
 
     it('Closes the dialog', (done) => {
@@ -265,6 +271,7 @@ describe('<websocket-data-view>', () => {
     let element;
     beforeEach(async () => {
       element = await basicFixture();
+      await nextFrame();
     });
 
     it('Dispatches export-data event', () => {
@@ -302,6 +309,7 @@ describe('<websocket-data-view>', () => {
     let element;
     beforeEach(async () => {
       element = await basicFixture();
+      await nextFrame();
     });
 
     it('Getter returns previously registered handler', () => {
